@@ -1,0 +1,6 @@
+<?php
+
+	define('IP_SERVER', 'SABNZB_SERVER_IP');
+	define('SAB_USERNAME', 'SABNZB_SERVER_LOGIN');
+	define('SAB_PASSWORD', 'SABNZB_SERVER_PASS');
+	define('SAB_API_KEY', 'SABNZB_SERVER_KEY');
