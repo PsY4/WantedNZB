@@ -1,6 +1,6 @@
-<?php  
-error_reporting(E_ALL ^ E_NOTICE); 
-ini_set("display_errors", 1); 
+<?php
+error_reporting(E_ALL ^ E_NOTICE);
+ini_set("display_errors", 1);
 include_once('simple_html_dom.php');
 
 // ************************************
@@ -71,7 +71,7 @@ if ($result['status'] == 'ok'){
 			$l_file = $ligne->find('td', 5)->plaintext;
 			$l_taille = $ligne->find('td', 6)->plaintext;
 			//echo "$l_title : $l_type ($l_taille) $l_lng = $l_file\n";
-			
+
 			$the_year="";
 			// Nettoyage du titre (on ne garde que le nom et l'année)
 			preg_match_all("/\(([^)]*)\)/",$l_title,$matches); // On extrait tout ce qui est entre parenthèses
@@ -82,8 +82,8 @@ if ($result['status'] == 'ok'){
 					$the_year = $mm;
 				}
 			}
-			
-			
+
+
 			$search_results[] = array(
 				'type' => $l_type,
 				'titre' => trim($l_title),
@@ -97,49 +97,58 @@ if ($result['status'] == 'ok'){
 	}
 }
 else {
-    echo 'A error occured: ' . $result['error']; 
+    echo 'A error occured: ' . $result['error'];
 }
-	
+
 // *************************************
-// REQUETTES à NZB.cc
+// REQUETTES à BINSEARCH.INFO
 $final_results = array();
 
 if (is_array($search_results)) {
 	foreach ($search_results as $search_result) {
-		$ress = array();
-		$post_data = array(
-			'q'=> $search_result['fichier'],
-	        'r'=> 0
-	        );
-		$result = strip_tags(gzinflate(substr(file_get_contents('http://nzb.cc/q.php?r=0&q='.urlencode(str_replace('&quot;', '"', $search_result['fichier'])), null),10)));
-		$result = html_entity_decode(str_ireplace("&quot;","",$result));
-		$vars = explode(";",$result);
-		// Nombre de résultats
-		$vars[0] = str_ireplace("var t=","",$vars[0]);
-		if((int)$vars[0] === 0) continue;
-		// Résultats
-		$vars[1] = str_ireplace("var d=[","",$vars[1]);
-		$vars[1] = substr($vars[1],0,-1);
-		//echo "================================\r\n".print_r(explode("],[",$vars[1]), 1)."\r\n";
-		$vars[1] = explode("],[",$vars[1]);
-		for ($i=0; $i<sizeof($vars[1]); $i++)  {
-			if (substr($vars[1][$i],0,1)=="[") $vars[1][$i] = substr($vars[1][$i],1);
-			if (substr($vars[1][$i],-1)=="]") $vars[1][$i] = substr($vars[1][$i],0,-1);
-			//echo "================================\r\n".print_r(str_getcsv($vars[1][$i], ",", "\""), 1)."\r\n";
-			$tmp_var = str_getcsv($vars[1][$i], ",", "\"");
-			$vars[1][$i] = explode(',',$vars[1][$i]);
-		
-			$search_result['nzbs'][] = array(
-									'id' => $tmp_var[0],
-									'name' => str_ireplace("\"","",$tmp_var[1]),
-									'size' => $tmp_var[5],
-									'date' => str_ireplace(" days","",str_ireplace("\"","",$tmp_var[6])),
-									'comment' => $tmp_var[7]
-									);
+
+	    // NZB search URL : https://www.binsearch.info/index.php?q=63647&m=&max=25&adv_g=&adv_age=999&adv_sort=date&minsize=&maxsize=&font=&postdate=
+	    $search_url = 'https://www.binsearch.info/index.php?q='.urlencode(str_replace('&quot;', '"', $search_result['fichier'])).'&m=&max=25&adv_col=on&adv_g=&adv_age=999&adv_sort=date&minsize=&maxsize=&font=&postdate=';
+
+	    // Result page download
+	    $result = file_get_contents($search_url, null);
+
+	    // Extract lines of results
+	    $partials = explode("<input type=\"checkbox\" name=\"",$result);
+	    array_shift($partials); // Remove document start
+	    array_shift($partials); // Remove document start
+	    array_pop($partials); // Remove document end
+
+	    // Decode each line
+	    foreach ($partials as $k => $v) {
+	        $partials[$k] = str_ireplace("<td>","|", $partials[$k]); // Isolate columns
+	        $partials[$k] = strip_tags($partials[$k]); // Remove HTML tags from line source code
+	        $partials[$k] = str_ireplace("\" >","|", $partials[$k]); // Isolate id
+	        $partials[$k] = str_ireplace("collection size: ","|", $partials[$k]); // Isolate name
+	        $partials[$k] = str_ireplace(", parts available: ","|", $partials[$k]); // Isolate filesize
+
+	        $partials[$k] = html_entity_decode($partials[$k]); // formatting
+
+	        $tmp_res = explode('|',$partials[$k]);
+
+	        $filesize = 0;
+	        $search_result['nzbs'][] = array(
+								'id' => $tmp_res[0],
+								'name' => $tmp_res[2],
+								'size' => ((strpos($tmp_res[3],"GB")!==false)?(intval($tmp_res[3]*1000)):(intval($tmp_res[3]))),
+								'date' => $tmp_res[7],
+								'comment' => $tmp_res[4]
+								);
+
 		}
-		
+
+		// Result count
+		if(sizeof($partials)<1) continue;
+
+        // Résults
 		$final_results[] = $search_result;
 	}
+
 	// Mise en tableau des résultats
 	$release_l = array();
 	foreach ($final_results as $release) {
@@ -148,7 +157,7 @@ if (is_array($search_results)) {
 				$dlType != 'movies' ||
 				($dlType === 'movies' && $line['size'] > RELEASE_MIN_SIZE && $line['size'] < RELEASE_MAX_SIZE)
 			) {
-				
+
 				// Calcul du score de la release
 				$tmp_score = 0;
 				$tmp_score+= intval($line['size']/1024);	// Taille de la release
@@ -159,7 +168,7 @@ if (is_array($search_results)) {
 					default: break;
 				}
 				$tmp_score-= intval($line['date'])/10;	// Date de la release
-				
+
 				// Création de la ligne
 				$release_l[]= array('name' => $release['titre'],
 									'year' => $release['annee'],
@@ -171,15 +180,15 @@ if (is_array($search_results)) {
 									'nzb' => urlencode("http://nzb.cc/nzb.php?c=".$line['id']),
 									'score' => $tmp_score
 									);
-									
-	
+
+
 			}
 		}
 	}
 
 	// Tri par score
 	usort($release_l, "cmp");
-	
+
 	foreach ($release_l as $line) {
 		echo "<li class=\"result\">
 				<a href='#' onclick=\"send_nzb('".$line['nzb']."','".urlencode($line['name'])."','".$dlType."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
@@ -202,67 +211,67 @@ echo "<li class=\"result\">
 		</li>";
 ?>
 
-<?php // ************ FONCTIONS 
+<?php // ************ FONCTIONS
 function cmp($a, $b) { return ($a["score"]<$b["score"]); }
 
 function post_request($url, $data, $referer='') {
- 
+
     // Convert the data array into URL Parameters like a=b&foo=bar etc.
     if (is_array($data)) {
     	$data = http_build_query($data);
     	$data = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $data);
     }
- 
+
     // parse the given URL
     $url = parse_url($url);
- 
-    if ($url['scheme'] != 'http') { 
+
+    if ($url['scheme'] != 'http') {
         die('Error: Only HTTP request are supported !');
     }
- 
+
     // extract host and path:
     $host = $url['host'];
     $path = $url['path'];
- 
+
     // open a socket connection on port 80 - timeout: 30 sec
     $fp = fsockopen($host, 80, $errno, $errstr, 30);
- 
+
     if ($fp){
- 
+
         // send the request headers:
         fputs($fp, "POST $path HTTP/1.1\r\n");
         fputs($fp, "Host: $host\r\n");
- 
+
         if ($referer != '')
             fputs($fp, "Referer: $referer\r\n");
- 
+
         fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n");
         fputs($fp, "Content-length: ". strlen($data) ."\r\n");
         fputs($fp, "Connection: close\r\n\r\n");
         fputs($fp, $data);
- 
-        $result = ''; 
+
+        $result = '';
         while(!feof($fp)) {
             // receive the results of the request
             $result .= fgets($fp, 128);
         }
     }
-    else { 
+    else {
         return array(
-            'status' => 'err', 
+            'status' => 'err',
             'error' => "$errstr ($errno)"
         );
     }
- 
+
     // close the socket connection:
     fclose($fp);
- 
+
     // split the result header from the content
     $result = explode("\r\n\r\n", $result, 2);
- 
+
     $header = isset($result[0]) ? $result[0] : '';
     $content = isset($result[1]) ? $result[1] : '';
- 
+
     // return as structured array:
     return array(
         'status' => 'ok',
