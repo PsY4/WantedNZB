@@ -1,6 +1,6 @@
 <?php
- error_reporting(E_ALL); 
- ini_set("display_errors", 1); 
+ error_reporting(E_ALL);
+ ini_set("display_errors", 1);
 
 include_once('config.php');
 
@@ -10,8 +10,8 @@ if(isset($_GET['cat']) && !empty($_GET['cat'])) {
 	$cat = '';
 }
 
-$url = 
-	"http://".IP_SERVER.":8080/sabnzbd/api?" .
+$url =
+	"http://".IP_SERVER.":".PORT_SERVER."/sabnzbd/api?" .
 	"ma_username=".SAB_USERNAME."&" .
 	"ma_password=".SAB_PASSWORD."&" .
 	"apikey=".SAB_API_KEY."&" .
