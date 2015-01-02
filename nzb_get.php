@@ -177,11 +177,9 @@ if (is_array($search_results)) {
 									'size' => $line['size'],
 									'date' => $line['date'],
 									'file' => $line['name'],
-									'nzb' => urlencode("http://nzb.cc/nzb.php?c=".$line['id']),
+									'nzb' => urlencode("https://www.binsearch.info/?action=nzb&".$line['id']."=1"),
 									'score' => $tmp_score
 									);
-
-
 			}
 		}
 	}
