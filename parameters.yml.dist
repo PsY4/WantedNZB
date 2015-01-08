@@ -1,0 +1,6 @@
+parameters:
+    IP_SERVER: 0.0.0.0
+    PORT_SERVER: 8080
+    SAB_USERNAME: username
+    SAB_PASSWORD: password
+    SAB_API_KEY: ~
