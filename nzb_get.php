@@ -6,9 +6,6 @@ include_once('simple_html_dom.php');
 // ************************************
 // PARAMS du SCRIPT
 // ************************************
-define("RELEASE_MIN_SIZE",3000);
-define("RELEASE_MAX_SIZE",15000);
-
 $dlTypes = array(
 	'movies' => array(
 		'fr' => array(39, 49),
@@ -155,7 +152,7 @@ if (is_array($search_results)) {
 		foreach ($release['nzbs'] as $line) {
 			if (
 				$dlType != 'movies' ||
-				($dlType === 'movies' && $line['size'] > RELEASE_MIN_SIZE && $line['size'] < RELEASE_MAX_SIZE)
+				($dlType === 'movies' && $line['size'] > DL_MIN_SIZE_MB && $line['size'] < DL_MAX_SIZE_MB)
 			) {
 
 				// Calcul du score de la release
