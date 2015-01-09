@@ -4,3 +4,5 @@ parameters:
     SAB_USERNAME: username
     SAB_PASSWORD: password
     SAB_API_KEY: ~
+    DL_MIN_SIZE_MB: 10000
+    DL_MAX_SIZE_MB: 60000
