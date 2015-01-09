@@ -16,6 +16,10 @@
 		$(document).ready(function() {
 		    // Focus le champ de recherche à l'arrivée sur la page
 		    $('input#search').focus();
+		    // Lance le timer de màj du statut SABNzbd+ toutes les 5 minutes
+		    setInterval(function () {update_status()}, 5*60*1000);
+		    // El le lance une première fois
+		    update_status();
 			// Click sur la loupe lance la recherche
 			$('div.icon').click(function(){
 			    var search_string = $("input#search").val();
@@ -93,6 +97,18 @@
 			return false;
 		}
 
+		// Fonction d'e récup du status SABNZBD+
+		function update_status() {
+			$.ajax({
+				type: "GET",
+				url: "get_nzb_status.php",
+				data: { },
+				cache: false,
+				success: function(html){ $(".footer").html(html); }
+			});
+			return false;
+		}
+
 		// Relance d'un élément de la wanted
 		function load_wanted(name) {
 			$("input#search").val(name);
@@ -102,7 +118,6 @@
 		</script>
 </head>
 <body>
-
 	<div id="main">
 		<center><a href="/"><img src='wanted.png'></a></center>
 		<input type="text" id="search" autocomplete="off"><div class="icon"></div>
@@ -152,6 +167,8 @@
 
 				}
 		?></ul>
+	</div>
+	<div class="footer">
 	</div>
 <style>
 html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
@@ -203,6 +220,25 @@ a {
 	background:#4096ee;
 	color:#fff;
 }
+
+.footer {
+    display:block;
+    position: absolute;
+    bottom: 0;
+    height: 25px;
+    width: 100%;
+	padding: 2px;
+	margin: 0;
+	background-color: #ddd;
+	border :0;
+	box-sizing: border-box;
+	text-align:center;
+	font-weight:bold;
+}
+
+.success { color:green}
+.error {color:red}
+.warning {color:orange}
 /******************************************************************
 General CSS
 ******************************************************************/
