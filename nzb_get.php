@@ -54,6 +54,9 @@ $post_data = array(
     'edYear'=>''
 );
 
+$nbResultsBinnews = 0;
+$startBinnews = microtime(true);
+
 $result = post_request('http://www.binnews.in/_bin/search2.php', $post_data);
 if ($result['status'] == 'ok'){
     $html = str_get_html($result['content']);
@@ -62,6 +65,7 @@ if ($result['status'] == 'ok'){
 	if (!($table_resultats==null)) {
 		$lignes = $table_resultats->find('tr[class=ligneclaire],tr[class=lignefoncee]');
 		foreach ($lignes as $ligne) {
+			$nbResultsBinnews++;
 			$ligne = str_get_html( preg_replace('/<table(.*?)>(.*?)<\\/table>/','',$ligne->innertext())); // On supprime les sous-tables
 			$l_type = $ligne->find('td', 1)->find('span', 0)->plaintext;
 			$l_title = $ligne->find('a[class=c16]', 0)->plaintext;
@@ -95,12 +99,17 @@ if ($result['status'] == 'ok'){
 	}
 }
 else {
-    echo 'A error occured: ' . $result['error'];
+    echo 'An error occured : ' . $result['error'];
 }
+$stopBinnews = microtime(true);
+$elapsedBinnews = $stopBinnews - $startBinnews;
 
 // *************************************
 // REQUETTES à BINSEARCH.INFO
+// *************************************
 $final_results = array();
+$nbResultsBinsearch = 0;
+$startBinsearch = microtime(true);
 
 if (is_array($search_results)) {
 	foreach ($search_results as $search_result) {
@@ -119,6 +128,7 @@ if (is_array($search_results)) {
 
 	    // Decode each line
 	    foreach ($partials as $k => $v) {
+			$nbResultsBinsearch++;
 	        $partials[$k] = str_ireplace("<td>","|", $partials[$k]); // Isolate columns
 	        $partials[$k] = strip_tags($partials[$k]); // Remove HTML tags from line source code
 	        $partials[$k] = str_ireplace("\" >","|", $partials[$k]); // Isolate id
@@ -146,8 +156,12 @@ if (is_array($search_results)) {
         // Résults
 		$final_results[] = $search_result;
 	}
+	$stopBinsearch = microtime(true);
+	$elapsedBinsearch = $stopBinsearch - $startBinsearch;
+
 
 	// Mise en tableau des résultats
+	$nbResultsFinal = 0;
 	$release_l = array();
 	foreach ($final_results as $release) {
 		foreach ($release['nzbs'] as $line) {
@@ -178,6 +192,7 @@ if (is_array($search_results)) {
 									'nzb' => urlencode("https://www.binsearch.info/?action=nzb&".$line['id']."=1"),
 									'score' => $tmp_score
 									);
+				$nbResultsFinal++;
 			}
 		}
 	}
@@ -185,6 +200,13 @@ if (is_array($search_results)) {
 	// Tri par score
 	usort($release_l, "cmp");
 
+	echo "<li>
+			<h5><nobr>
+				BINNEWS.IN : ".$nbResultsBinnews." résultats en ".sprintf("%0.2f",$elapsedBinnews)." secondes.<br />
+				BINSEARCH.INFO : ".$nbResultsBinsearch." résultats en ".sprintf("%0.2f",$elapsedBinsearch)." secondes.<br />
+				FINAL : ".$nbResultsFinal." résultats en ".sprintf("%0.2f",($elapsedBinnews+$elapsedBinsearch))." secondes.<br />
+			</nobr></h5>
+		</li>";
 	foreach ($release_l as $line) {
 		echo "<li class=\"result\">
 				<a href='#' onclick=\"send_nzb('".$line['nzb']."','".urlencode($line['name'])."','".$dlType."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
@@ -197,47 +219,55 @@ if (is_array($search_results)) {
 	}
 }
 
-// Ajout de l'enregistrement aux favoris
-echo "<li class=\"result\">
-			<a href='#' onclick=\"save_wanted('".urlencode($_GET['q'])."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
-				<img src='sab.png' class='grayscale'>
-				<h2><nobr>Ajouter à la WishList</nobr></h2>
-				<h4><nobr>Si vous ne trouvez pas la release qui vous convient, cliquez ici.<br />Il sera disponnible en recherche rapide à chaque visite</nobr></h4>
-			</a>
-		</li>";
-?>
 
-<?php // ************ FONCTIONS
+// Wishlist
+$file = "wishlist.txt";
+$wishlist_items = json_decode(file_get_contents($file), true);
+
+if (!is_array($wishlist_items) || !in_array($_GET['q'],$wishlist_items)) {
+	// Ajout de la recherche aux favoris
+	echo "<li>
+				<a href='#' onclick=\"save_wanted('".urlencode($_GET['q'])."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
+					<img src='wishlist.png' class='grayscale'>
+					<h2><nobr>Ajouter aux favoris</nobr></h2>
+					<h4><nobr>Si vous ne trouvez pas la release qui vous convient, cliquez ici.<br />Il sera disponnible en recherche rapide à chaque visite</nobr></h4>
+				</a>
+			</li>
+			";
+} else {
+	// Suppression de la WishList
+	echo "<li>
+				<a href='#' onclick=\"remove_wanted('".urlencode($_GET['q'])."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
+					<img src='wishlist.png' class='grayscale'>
+					<h2><nobr>Supprimer des favoris</nobr></h2>
+					<h4><nobr>Si vous avez trouvé la release qui vous convient,<br />cliquez ici pour supprimer ".urlencode($_GET['q'])." des favoris.</nobr></h4>
+				</a>
+			</li>
+			";
+}
+
+ // ************ FONCTIONS
 function cmp($a, $b) { return ($a["score"]<$b["score"]); }
 
 function post_request($url, $data, $referer='') {
-
-    // Convert the data array into URL Parameters like a=b&foo=bar etc.
     if (is_array($data)) {
     	$data = http_build_query($data);
     	$data = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $data);
     }
-
-    // parse the given URL
     $url = parse_url($url);
 
     if ($url['scheme'] != 'http') {
         die('Error: Only HTTP request are supported !');
     }
 
-    // extract host and path:
     $host = $url['host'];
     $path = $url['path'];
 
-    // open a socket connection on port 80 - timeout: 30 sec
     $fp = fsockopen($host, 80, $errno, $errstr, 30);
-
     if ($fp){
 
-        // send the request headers:
         fputs($fp, "POST $path HTTP/1.1\r\n");
         fputs($fp, "Host: $host\r\n");
-
         if ($referer != '')
             fputs($fp, "Referer: $referer\r\n");
 
@@ -259,16 +289,12 @@ function post_request($url, $data, $referer='') {
         );
     }
 
-    // close the socket connection:
     fclose($fp);
 
-    // split the result header from the content
     $result = explode("\r\n\r\n", $result, 2);
-
     $header = isset($result[0]) ? $result[0] : '';
     $content = isset($result[1]) ? $result[1] : '';
 
-    // return as structured array:
     return array(
         'status' => 'ok',
         'header' => $header,
@@ -288,4 +314,3 @@ function multi_explode(array $delimiter,$string){
     }
     return $out;
 }
-?>

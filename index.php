@@ -97,6 +97,18 @@
 			return false;
 		}
 
+		// Fonction dde suppression dans la wishlist [ToReDo]
+		function remove_wanted(name) {
+			$.ajax({
+				type: "GET",
+				url: "remove_from_wishlist.php",
+				data: { nzb_name: name },
+				cache: false,
+				success: function(html){ location="/"; }
+			});
+			return false;
+		}
+
 		// Fonction d'e récup du status SABNZBD+
 		function update_status() {
 			$.ajax({
@@ -161,12 +173,13 @@
 								<a href='#' onclick=\"load_wanted('".ucwords(urldecode($film))."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
 									<img class='grayscale' src='imdb_image.php?t=".urlencode($film)."'>
 									<h2><nobr>".ucwords(urldecode($film))."</nobr></h2>
-									<h4><nobr>Dans la WishList<br />Cliquez ici pour relancer la recherche</nobr></h4>
+									<h4><nobr>Dans les favoris<br />Cliquez ici pour relancer la recherche</nobr></h4>
 								</a>
 							</li><script>$(document).ready(function() {\$(\"#results\").show();});</script>";
 
 				}
 		?></ul>
+		<br /><br />
 	</div>
 	<div class="footer">
 	</div>
@@ -223,7 +236,7 @@ a {
 
 .footer {
     display:block;
-    position: absolute;
+    position: fixed;
     bottom: 0;
     height: 25px;
     width: 100%;
@@ -384,7 +397,7 @@ ul#results li {
 	-webkit-transition: background-color .3s ease-in-out;
 	overflow: hidden;
 }
-ul#results li:hover {
+ul#results li.result:hover {
 	background-color: #F7F7F7;
 	background-image:url(sab.png) ;
 	background-size: 70px 70px;
