@@ -68,7 +68,8 @@
 						$("ul#results").html("<img src='wait.gif' />");
 					}
 				});
-			}return false;
+			}
+			return false;
 		}
 
 		// Fonction d'ajout aux DL
@@ -125,7 +126,31 @@
 		function load_wanted(name) {
 			$("input#search").val(name);
 			search();
+		}
 
+		// Relance d'un élément de la wanted
+		function view_recent() {
+            var type = $('#types input[type="radio"]:checked').val();
+            var lang = $('#langs input[type="radio"]:checked').val();
+
+            $.ajax({
+                type: "GET",
+                url: "binnewz_recent.php",
+                data: {
+                    q: "",
+                    type: type,
+                    lang: lang
+                },
+                cache: false,
+                success: function(html){
+                    $("ul#results").html(html);
+                },
+                beforeSend : function() {
+                    $("ul#results").html("<img src='wait.gif' />");
+                }
+            });
+
+            return false;
 		}
 		</script>
 </head>
@@ -164,7 +189,8 @@
 			</label>
 		</div>
 		<h4 id="results-text">Recherche de : <b id="search-string"></b></h4>
-		<ul id="results"><?php
+		<ul id="results">
+            <?php
 			// Au chargement de la page, on charge la wishlist
 			$films = json_decode(file_get_contents("wishlist.txt"), true);
 			if (is_array($films))
@@ -178,7 +204,16 @@
 							</li><script>$(document).ready(function() {\$(\"#results\").show();});</script>";
 
 				}
-		?></ul>
+		    ?>
+            <li>
+                <a href='#' onclick="view_recent(); this.parentNode.style.backgroundColor = 'lightgreen'; return false;">
+                <img src='wishlist.png' class='grayscale'>
+                <h2><nobr>Voir les releases récentes</nobr></h2>
+                <h4><nobr>Consultez ici les releases de films des 3 derniers jours.<br />
+                        Cliquez ici pour voir les releases récentes. </nobr></h4>
+                </a>
+            </li>
+        </ul>
 		<br /><br />
 	</div>
 	<div class="footer">
@@ -318,8 +353,11 @@ img.grayscale {
     -webkit-filter: grayscale(100%); /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
 div#main {
-	width: 468px;
+	width: 100%;
+    max-width: 468px;
 	margin: 20px auto 20px auto;
+    padding : 0 10px 0 10px;
+    box-sizing: border-box;
 }
 .title {
 	line-height: 1.2em;
@@ -328,7 +366,7 @@ div#main {
 div.icon {
 	margin-top: 4px;
 	float: left;
-	width: 31px;
+	width: 30px;
 	height: 30px;
 	background-image: url(magnify.gif);
 	background-repeat: no-repeat;
@@ -352,7 +390,8 @@ div.icon:hover {
 	cursor: pointer;
 }
 input#search {
-	width: 420px;
+	width:85%;
+    max-width: 385px;
 	height: 25px;
 	padding: 5px;
 	margin-bottom: 15px;
@@ -378,7 +417,8 @@ h4#results-text {
 }
 ul#results {
 	display: none;
-	width: 468px;
+	width: 100%;
+    max-width: 468px;
 	margin-top: 4px;
 	border: 1px solid #ababab;
 	-webkit-border-radius: 2px;
@@ -387,6 +427,9 @@ ul#results {
 	-webkit-box-shadow: rgba(0, 0, 0, .15) 0 1px 3px;
 	-moz-box-shadow: rgba(0,0,0,.15) 0 1px 3px;
 	box-shadow: rgba(0, 0, 0, .15) 0 1px 3px;
+}
+ul#results>img {
+    width: 100%;
 }
 ul#results li {
 	padding: 8px;

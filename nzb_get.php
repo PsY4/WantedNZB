@@ -3,6 +3,7 @@ error_reporting(E_ALL ^ E_NOTICE);
 ini_set("display_errors", 1);
 include_once('simple_html_dom.php');
 include_once('config.php');
+$nbWarnings = 0;
 
 // ************************************
 // PARAMS du SCRIPT
@@ -50,7 +51,7 @@ $post_data = array(
     'chkFichier' => 'on',
     'chkCat' => 'on',
     'cats' => $cats,
-    'edAge'=>'',
+    'edAge'=>'999',
     'edYear'=>''
 );
 
@@ -85,7 +86,6 @@ if ($result['status'] == 'ok'){
 				}
 			}
 
-
 			$search_results[] = array(
 				'type' => $l_type,
 				'titre' => trim($l_title),
@@ -104,6 +104,7 @@ else {
 $stopBinnews = microtime(true);
 $elapsedBinnews = $stopBinnews - $startBinnews;
 
+
 // *************************************
 // REQUETTES à BINSEARCH.INFO
 // *************************************
@@ -112,53 +113,76 @@ $nbResultsBinsearch = 0;
 $startBinsearch = microtime(true);
 
 if (is_array($search_results)) {
+    array_splice($search_results, 25); // On ne garde que les 25 premiers résultats
+
+    $ctx = stream_context_create(array('http'=>
+        array(
+            'timeout' => 2,  //5 Seconds
+        )
+    ));
 	foreach ($search_results as $search_result) {
 
 	    // NZB search URL : https://www.binsearch.info/index.php?q=63647&m=&max=25&adv_g=&adv_age=999&adv_sort=date&minsize=&maxsize=&font=&postdate=
-	    $search_url = 'https://www.binsearch.info/index.php?q='.urlencode(str_replace('&quot;', '"', $search_result['fichier'])).'&m=&max=25&adv_col=on&adv_g=&adv_age=999&adv_sort=date&minsize=&maxsize=&font=&postdate=';
+	    $search_url =
+            'https://www.binsearch.info/?q='.
+            urlencode(
+                str_replace('&quot;', '"', $search_result['fichier'])
+            ).
+            '&m='.
+            '&max=25'.
+            '&adv_col=on'.
+            '&adv_g='.
+            '&adv_age=999'.
+            '&adv_sort=date'.
+            '&minsize='.
+            //'&maxsize='.   // renvoie une 403 !!!
+            '&font='.
+            '&postdate=';
 
 	    // Result page download
-	    $result = file_get_contents($search_url, null);
+        set_error_handler("warning_handler", E_WARNING);
+        $result = file_get_contents($search_url, false, $ctx);
 
-	    // Extract lines of results
-	    $partials = explode("<input type=\"checkbox\" name=\"",$result);
-	    array_shift($partials); // Remove document start
-	    array_shift($partials); // Remove document start
-	    array_pop($partials); // Remove document end
+        if ($result !== FALSE) {
+            // Extract lines of results
+            $partials = explode("<input type=\"checkbox\" name=\"",$result);
+            array_shift($partials); // Remove document start
+            array_shift($partials); // Remove document start
+            array_pop($partials); // Remove document end
 
-	    // Decode each line
-	    foreach ($partials as $k => $v) {
-			$nbResultsBinsearch++;
-	        $partials[$k] = str_ireplace("<td>","|", $partials[$k]); // Isolate columns
-	        $partials[$k] = strip_tags($partials[$k]); // Remove HTML tags from line source code
-	        $partials[$k] = str_ireplace("\" >","|", $partials[$k]); // Isolate id
-	        $partials[$k] = str_ireplace("collection size: ","|", $partials[$k]); // Isolate name
-	        $partials[$k] = str_ireplace(", parts available: ","|", $partials[$k]); // Isolate filesize
+            // Decode each line
+            foreach ($partials as $k => $v) {
+                $nbResultsBinsearch++;
+                $partials[$k] = str_ireplace("<td>","|", $partials[$k]); // Isolate columns
+                $partials[$k] = strip_tags($partials[$k]); // Remove HTML tags from line source code
+                $partials[$k] = str_ireplace("\" >","|", $partials[$k]); // Isolate id
+                $partials[$k] = str_ireplace("collection size: ","|", $partials[$k]); // Isolate name
+                $partials[$k] = str_ireplace(", parts available: ","|", $partials[$k]); // Isolate filesize
 
-	        $partials[$k] = html_entity_decode($partials[$k]); // formatting
+                $partials[$k] = html_entity_decode($partials[$k]); // formatting
 
-	        $tmp_res = explode('|',$partials[$k]);
+                $tmp_res = explode('|',$partials[$k]);
 
-	        $filesize = 0;
-	        $search_result['nzbs'][] = array(
-								'id' => $tmp_res[0],
-								'name' => $tmp_res[2],
-								'size' => ((strpos($tmp_res[3],"GB")!==false)?(intval($tmp_res[3]*1000)):(intval($tmp_res[3]))),
-								'date' => $tmp_res[7],
-								'comment' => $tmp_res[4]
-								);
+                $filesize = 0;
+                $search_result['nzbs'][] = array(
+                                    'id' => $tmp_res[0],
+                                    'name' => $tmp_res[2],
+                                    'size' => ((strpos($tmp_res[3],"GB")!==false)?(intval($tmp_res[3]*1000)):(intval($tmp_res[3]))),
+                                    'date' => $tmp_res[7],
+                                    'comment' => $tmp_res[4]
+                                    );
 
-		}
+            }
 
-		// Result count
-		if(sizeof($partials)<1) continue;
+            // Result count
+            if(sizeof($partials)<1) continue;
 
-        // Résults
-		$final_results[] = $search_result;
+            // Résults
+            $final_results[] = $search_result;
+        }
 	}
 	$stopBinsearch = microtime(true);
 	$elapsedBinsearch = $stopBinsearch - $startBinsearch;
-
 
 	// Mise en tableau des résultats
 	$nbResultsFinal = 0;
@@ -203,7 +227,9 @@ if (is_array($search_results)) {
 	echo "<li>
 			<h5><nobr>
 				BINNEWS.IN : ".$nbResultsBinnews." résultats en ".sprintf("%0.2f",$elapsedBinnews)." secondes.<br />
-				BINSEARCH.INFO : ".$nbResultsBinsearch." résultats en ".sprintf("%0.2f",$elapsedBinsearch)." secondes.<br />
+				BINSEARCH.INFO : ".$nbResultsBinsearch." résultats en ".sprintf("%0.2f",$elapsedBinsearch)." secondes".
+                    (($nbWarnings>0)?" (".$nbWarnings." erreurs)":"") .
+                ".<br />
 				FINAL : ".$nbResultsFinal." résultats en ".sprintf("%0.2f",($elapsedBinnews+$elapsedBinsearch))." secondes.<br />
 			</nobr></h5>
 		</li>";
@@ -218,7 +244,6 @@ if (is_array($search_results)) {
 			</li>";
 	}
 }
-
 
 // Wishlist
 $file = "wishlist.txt";
@@ -313,4 +338,9 @@ function multi_explode(array $delimiter,$string){
         return $string;
     }
     return $out;
+}
+
+function warning_handler($errno, $errstr) {
+    global $nbWarnings;
+    $nbWarnings++;
 }
