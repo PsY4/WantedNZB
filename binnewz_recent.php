@@ -65,7 +65,8 @@ if ($result['status'] == 'ok'){
                 'name' => $release['titre'],
                 'year' => $release['annee'],
                 'type' => $release['type'],
-                'lng' => $release['langue']
+                'lng' => $release['langue'],
+                'size' => $release['taille']
             );
 
         }
@@ -82,7 +83,7 @@ foreach ($release_l as $line) {
             <a href='#' onclick=\"load_wanted('".ucwords(urldecode($line['name']))."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
                 <img src='imdb_image.php?t=".urlencode($line['name'])."&y=".$line['year']."'>
                 <h2><nobr>".$line['name'].(($line['year'])?" (".$line['year'].")":"")."</nobr></h2>
-                <h3>".$line['type']." - ".$line['lng']."</h3>
+                <h3>".$line['type']." - ".$line['lng']." - ".$line['size']."</h3>
                 <h4><nobr>Sortie récente - Cliquez ici pour lancer la recherche</nobr></h4>
             </a>
         </li>";

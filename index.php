@@ -201,7 +201,7 @@
 									<h2><nobr>".ucwords(urldecode($film))."</nobr></h2>
 									<h4><nobr>Dans les favoris<br />Cliquez ici pour relancer la recherche</nobr></h4>
 								</a>
-							</li><script>$(document).ready(function() {\$(\"#results\").show();});</script>";
+							</li>";
 
 				}
 		    ?>
@@ -416,7 +416,6 @@ h4#results-text {
 	visibility:hidden
 }
 ul#results {
-	display: none;
 	width: 100%;
     max-width: 468px;
 	margin-top: 4px;

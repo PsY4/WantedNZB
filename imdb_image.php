@@ -11,8 +11,15 @@ $years = [
 
 $remoteImage = "no-poster.png";
 
+$ctx = stream_context_create(array('http'=>
+    array(
+        'timeout' => 1,  //1 Seconde
+    )
+));
+
+set_error_handler("warning_handler", E_WARNING);
 foreach ($years as $year) {
-    $json=file_get_contents("http://omdbapi.com/?t=".urlencode($_GET['t'])."&y=".urlencode($year)."");
+    $json=file_get_contents("http://omdbapi.com/?t=".urlencode($_GET['t'])."&y=".urlencode($year)."", false, $ctx);
     $info=json_decode($json);
     if ((is_object($info))&& (trim($info->Poster)!="")){
         if ($info->Poster=="N/A") {
@@ -27,4 +34,11 @@ foreach ($years as $year) {
 $imginfo = getimagesize($remoteImage);
 header("Content-type: ".$imginfo['mime']);
 readfile($remoteImage);
+
+
+function warning_handler($errno, $errstr) {
+    global $nbWarnings;
+    $nbWarnings++;
+}
+
 ?>
