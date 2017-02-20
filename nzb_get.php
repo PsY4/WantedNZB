@@ -241,7 +241,7 @@ if (is_array($search_results)) {
                 <a href='".$line['link']."' target='_blank'>
                     <img src='imdb_image.php?t=".urlencode($line['name'])."&y=".$line['year']."'>
                 </a>
-                <a href='#' onclick=\"send_nzb('".$line['nzb']."','".urlencode($line['name'])."','".$dlType."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
+                <a href='#' onclick=\"send_nzb('".$line['nzb']."','".addslashes(urlencode($line['name']))."','".$dlType."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
                     <h2><nobr>".$line['name'].(($line['year'])?" (".$line['year'].")":"")."</nobr></h2>
                     <h3>".$line['type']." - ".$line['lng']." - ".$line['size']." Mo - ".$line['date']." jours</h3>
                     <h4><nobr>".$line['file']."</nobr></h4>
