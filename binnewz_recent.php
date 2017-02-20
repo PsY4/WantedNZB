@@ -83,14 +83,14 @@ $nbResultsFinal++;
 
 foreach ($release_l as $line) {
     echo "<li class=\"result wishlist\">
-            <a href='#' onclick=\"load_wanted('".ucwords(urldecode($line['name']))."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
                 <a href='".$line['link']."' target='_blank'>
                     <img src='imdb_image.php?t=".urlencode($line['name'])."&y=".$line['year']."'>
                 </a>
-                <h2><nobr>".$line['name'].(($line['year'])?" (".$line['year'].")":"")."</nobr></h2>
-                <h3>".$line['type']." - ".$line['lng']." - ".$line['size']."</h3>
-                <h4><nobr>Sortie récente - Cliquez ici pour lancer la recherche</nobr></h4>
-            </a>
+                <a href='#' onclick=\"load_wanted('".ucwords(urldecode($line['name']))."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
+                    <h2><nobr>".$line['name'].(($line['year'])?" (".$line['year'].")":"")."</nobr></h2>
+                    <h3>".$line['type']." - ".$line['lng']." - ".$line['size']."</h3>
+                    <h4><nobr>Sortie récente - Cliquez ici pour lancer la recherche</nobr></h4>
+                </a>
         </li>";
 }
 
