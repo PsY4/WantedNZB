@@ -34,6 +34,7 @@ if ($result['status'] == 'ok'){
 			$ligne = str_get_html( preg_replace('/<table(.*?)>(.*?)<\\/table>/','',$ligne->innertext())); // On supprime les sous-tables
 			$l_type = $ligne->find('td', 1)->find('span', 0)->plaintext;
 			$l_title = $ligne->find('a[class=c16]', 0)->plaintext;
+			$l_link = $ligne->find('a[class=c16]', 0)->getAttribute('href');
 			$l_lng = $ligne->find('td', 3)->plaintext . $ligne->find('td', 3)->find('img', 0)->getAttribute('alt');
 			$l_file = $ligne->find('td', 5)->plaintext;
 			$l_taille = $ligne->find('td', 6)->plaintext;
@@ -56,6 +57,7 @@ if ($result['status'] == 'ok'){
 				'annee' => $the_year,
 				'langue' => $l_lng,
 				'fichier' => $l_file,
+				'link' => $l_link,
 				'taille' => $l_taille/*,
 				'code' =>$ligne->outertext*/
 			);
@@ -66,6 +68,7 @@ if ($result['status'] == 'ok'){
                 'year' => $release['annee'],
                 'type' => $release['type'],
                 'lng' => $release['langue'],
+                'link' => $release['link'],
                 'size' => $release['taille']
             );
 
@@ -81,7 +84,9 @@ $nbResultsFinal++;
 foreach ($release_l as $line) {
     echo "<li class=\"result wishlist\">
             <a href='#' onclick=\"load_wanted('".ucwords(urldecode($line['name']))."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
-                <img src='imdb_image.php?t=".urlencode($line['name'])."&y=".$line['year']."'>
+                <a href='".$line['link']."' target='_blank'>
+                    <img src='imdb_image.php?t=".urlencode($line['name'])."&y=".$line['year']."'>
+                </a>
                 <h2><nobr>".$line['name'].(($line['year'])?" (".$line['year'].")":"")."</nobr></h2>
                 <h3>".$line['type']." - ".$line['lng']." - ".$line['size']."</h3>
                 <h4><nobr>Sortie récente - Cliquez ici pour lancer la recherche</nobr></h4>

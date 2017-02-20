@@ -70,7 +70,8 @@ if ($result['status'] == 'ok'){
 			$ligne = str_get_html( preg_replace('/<table(.*?)>(.*?)<\\/table>/','',$ligne->innertext())); // On supprime les sous-tables
 			$l_type = $ligne->find('td', 1)->find('span', 0)->plaintext;
 			$l_title = $ligne->find('a[class=c16]', 0)->plaintext;
-			$l_lng = $ligne->find('td', 3)->plaintext . $ligne->find('td', 3)->find('img', 0)->getAttribute('alt');
+            $l_link = $ligne->find('a[class=c16]', 0)->getAttribute('href');
+            $l_lng = $ligne->find('td', 3)->plaintext . $ligne->find('td', 3)->find('img', 0)->getAttribute('alt');
 			$l_file = $ligne->find('td', 5)->plaintext;
 			$l_taille = $ligne->find('td', 6)->plaintext;
 			//echo "$l_title : $l_type ($l_taille) $l_lng = $l_file\n";
@@ -91,7 +92,8 @@ if ($result['status'] == 'ok'){
 				'titre' => trim($l_title),
 				'annee' => $the_year,
 				'langue' => $l_lng,
-				'fichier' => $l_file,
+                'link' => $l_link,
+                'fichier' => $l_file,
 				'taille' => $l_taille/*,
 				'code' =>$ligne->outertext*/
 			);
@@ -209,6 +211,7 @@ if (is_array($search_results)) {
 				$release_l[]= array('name' => $release['titre'],
 									'year' => $release['annee'],
 									'type' => $release['type'],
+									'link' => $release['link'],
 									'lng' => $release['langue'],
 									'size' => $line['size'],
 									'date' => $line['date'],
@@ -236,7 +239,9 @@ if (is_array($search_results)) {
 	foreach ($release_l as $line) {
 		echo "<li class=\"result\">
 				<a href='#' onclick=\"send_nzb('".$line['nzb']."','".urlencode($line['name'])."','".$dlType."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
-					<img src='imdb_image.php?t=".urlencode($line['name'])."&y=".$line['year']."'>
+                    <a href='".$line['link']."' target='_blank'>
+                        <img src='imdb_image.php?t=".urlencode($line['name'])."&y=".$line['year']."'>
+                    </a>
 					<h2><nobr>".$line['name'].(($line['year'])?" (".$line['year'].")":"")."</nobr></h2>
 					<h3>".$line['type']." - ".$line['lng']." - ".$line['size']." Mo - ".$line['date']." jours</h3>
 					<h4><nobr>".$line['file']."</nobr></h4>
