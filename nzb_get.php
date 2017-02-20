@@ -239,7 +239,7 @@ if (is_array($search_results)) {
 	foreach ($release_l as $line) {
 		echo "<li class=\"result\">
                 <a href='".$line['link']."' target='_blank'>
-                    <img src='imdb_image.php?t=".urlencode($line['name'])."&y=".$line['year']."'>
+                    <img src='tmdb_image.php?t=".urlencode($line['name'])."&y=".$line['year']."'>
                 </a>
                 <a href='#' onclick=\"send_nzb('".$line['nzb']."','".addslashes(urlencode($line['name']))."','".$dlType."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
                     <h2><nobr>".$line['name'].(($line['year'])?" (".$line['year'].")":"")."</nobr></h2>

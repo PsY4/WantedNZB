@@ -196,8 +196,8 @@
 			if (is_array($films))
 				foreach ($films as $film) {
 					echo 	"<li class=\"result wishlist\">
-								<a href='#' onclick=\"load_wanted('".ucwords(urldecode($film))."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
-									<img class='grayscale' src='imdb_image.php?t=".urlencode($film)."'>
+								<a href='#' onclick=\"load_wanted('".addslashes(ucwords(urldecode($film)))."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
+									<img class='grayscale' src='tmdb_image.php?t=".urlencode($film)."'>
 									<h2><nobr>".ucwords(urldecode($film))."</nobr></h2>
 									<h4><nobr>Dans les favoris<br />Cliquez ici pour relancer la recherche</nobr></h4>
 								</a>

@@ -84,7 +84,7 @@ $nbResultsFinal++;
 foreach ($release_l as $line) {
     echo "<li class=\"result wishlist\">
                 <a href='".$line['link']."' target='_blank'>
-                    <img src='imdb_image.php?t=".urlencode($line['name'])."&y=".$line['year']."'>
+                    <img src='tmdb_image.php?t=".urlencode($line['name'])."&y=".$line['year']."'>
                 </a>
                 <a href='#' onclick=\"load_wanted('".addslashes(ucwords(urldecode($line['name'])))."'); this.parentNode.style.backgroundColor = 'lightgreen'; return false;\">
                     <h2><nobr>".$line['name'].(($line['year'])?" (".$line['year'].")":"")."</nobr></h2>
