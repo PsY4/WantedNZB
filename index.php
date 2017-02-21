@@ -17,7 +17,7 @@
 		    // Focus le champ de recherche à l'arrivée sur la page
 		    $('input#search').focus();
 		    // Lance le timer de màj du statut SABNzbd+ toutes les 5 minutes
-		    setInterval(function () {update_status()}, 5*60*1000);
+		    setInterval(function () {update_status()}, 5/**60*/*1000);
 		    // El le lance une première fois
 		    update_status();
 			// Click sur la loupe lance la recherche
@@ -117,7 +117,10 @@
 				url: "get_nzb_status.php",
 				data: { },
 				cache: false,
-				success: function(html){ $(".footer").html(html); }
+				success: function(html){
+				    //$(".footer").html(html);
+				    $("#sabstatus").html(html);
+				}
 			});
 			return false;
 		}
@@ -205,9 +208,13 @@
 
 				}
 		    ?>
+            <?php /* status de sab */ ?>
+            <li id="sabstatus">
+            </li>
+            <?php /* Releases récentes */ ?>
             <li>
                 <a href='#' onclick="view_recent(); this.parentNode.style.backgroundColor = 'lightgreen'; return false;">
-                <img src='wishlist.png' class='grayscale'>
+                <img src='recent.png' class='grayscale'>
                 <h2><nobr>Voir les releases récentes</nobr></h2>
                 <h4><nobr>Consultez ici les releases de films des 3 derniers jours.<br />
                         Cliquez ici pour voir les releases récentes. </nobr></h4>
@@ -216,8 +223,8 @@
         </ul>
 		<br /><br />
 	</div>
-	<div class="footer">
-	</div>
+<!--	<div class="footer">-->
+<!--	</div>-->
 <style>
 html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
 	margin: 0;

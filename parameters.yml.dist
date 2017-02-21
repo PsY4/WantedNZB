@@ -6,3 +6,4 @@ parameters:
     SAB_API_KEY: ~
     DL_MIN_SIZE_MB: 10000
     DL_MAX_SIZE_MB: 60000
+    TMDB_API_KEY: ~
