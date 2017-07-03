@@ -19,21 +19,22 @@ $url =
 $result = file_get_contents($url);
 
 $status = json_decode($result, true);
+$status = $status['value'];
 
 //echo "<!-- ".print_r($status,1)." -->";
 ?>
-<a href='http://<?=SAB_USERNAME.":".SAB_PASSWORD."@".IP_SERVER.":".PORT_SERVER?>' target="_blank">
+<a href='http://<?=SAB_USERNAME.":".SAB_PASSWORD."@".IP_SERVER.":".PORT_SERVER?>/' target="_blank">
 <img src='sabstatus.png'>
 <?php
-if ($status['state']=="Paused") {
-    echo("<h2><span class='warning'><strong>En pause (".count($status['jobs'])." en attente)</strong></span></h2>");
-} else if ($status['state']=="IDLE") {
+if ($status['status']=="Paused") {
+    echo("<h2><span class='warning'><strong>En pause (".count($status['slots'])." en attente)</strong></span></h2>");
+} else if ($status['status']=="Idle") {
     echo("<h2><span class='success'>En attente</span></h2>
         <h4><nobr>SabNzbd est en ettente, il démarrera dès que vous aurez ajouté<br />une release à télécharger. </nobr></h4>");
-} else if ($status['state']=="Downloading") {
+} else if ($status['status']=="Downloading") {
     echo("<h2><span class='success'>Télécharge à <strong>".$status['speed']."o/s</strong>, finit dans <strong>".$status['timeleft']."</strong></span></h2>");
     $nbjobs=0;
-    foreach ($status['jobs'] as $job) {
+    foreach ($status['slots'] as $job) {
         $nbjobs++;
         echo "<h4><nobr>[".$job['timeleft']."] ".$job['filename']."</nobr></h4>";
     }

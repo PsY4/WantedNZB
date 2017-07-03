@@ -216,7 +216,7 @@
                 <a href='#' onclick="view_recent(); this.parentNode.style.backgroundColor = 'lightgreen'; return false;">
                 <img src='recent.png' class='grayscale'>
                 <h2><nobr>Voir les releases récentes</nobr></h2>
-                <h4><nobr>Consultez ici les releases de films des 3 derniers jours.<br />
+                <h4><nobr>Consultez ici les releases de films des 7 derniers jours.<br />
                         Cliquez ici pour voir les releases récentes. </nobr></h4>
                 </a>
             </li>

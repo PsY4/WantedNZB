@@ -15,7 +15,7 @@ $post_data = array(
     'chkFichier' => 'on',
     'chkCat' => 'on',
     'cats' => array(39, 49),
-    'edAge'=>'3',
+    'edAge'=>'7',
     'edYear'=>''
 );
 
